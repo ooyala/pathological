@@ -29,8 +29,6 @@ module Pathological
     paths = [root]
     pathfile_lines.each do |line|
       # Trim comments
-      # TODO(caleb): Maybe we only want to allow for comments with # at the beginning of the line? That way
-      # we won't screw up paths with # in them.
       line = line.split(/#/, 2)[0].strip
       next if line.empty?
       if line.start_with? ">"
