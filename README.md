@@ -44,6 +44,8 @@ Now your project root will be in your load path. If your project has, for exampl
 lib/foo` will work in any of your ruby files. This works because when Pathological is required it will search
 up the directory tree until it finds a `Pathfile`. (It will raise an error if there this cannot be found).
 
+`Pathfile`s should be kept in version control.
+
 Adding other paths to your load path
 ------------------------------------
 
