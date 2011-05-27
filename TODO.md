@@ -4,8 +4,9 @@ TODO
 Tasks
 -----
 
-  * Tests!
   * Push to the Ooyala github account; release on rubygems.org
+  * Consider rewriting tests in a less hacktastic manner (probably using a real directories or mockfs or
+    something).
 
 Design decisions
 ----------------
@@ -19,6 +20,8 @@ Design decisions
         . path/to/other/Pathfile        # Bash
         path/to/other/Pathfile          # Distinguishable from regular path if Pathfile is not a directory
 
+    **Not needed now --Caleb**
+
   * Do we like `>` to signify directives? Alternatives:
 
         > exclude-root # Current syntax
@@ -29,12 +32,16 @@ Design decisions
         p path/to/lib/
         d exclude-root
 
+    **Fine for now --Caleb**
+
   * Right now there's a small problem with comments: if your path includes the character `#`, then the rest
     will be chopped off (interpreted as a comment). We could remedy this by only allowing for comments to
     start at the beginning of lines:
 
         # Yes
         ../lib/ # No
+
+    **Let's leave this alone for now; probably a non-issue --Caleb**
 
   * Right our require paths tend to look like this (using `shared_lib/` as an example):
 
@@ -53,3 +60,6 @@ Design decisions
     require time would be to use a custom `require`. This is all quite a high cost to pay in terms of design
     simplicity, but yet being able to use Pathfiles as a single place to document what dependencies to pull in
     seems very appealing. Any ideas?
+
+    **After chatting with some people, we're going to leave this as is and truncate the `shared_lib` from our
+    paths. --Caleb**

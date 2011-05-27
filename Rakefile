@@ -1,4 +1,2 @@
-desc "build gem"
-task :build do
-  sh "gem build pathological.gemspec"
-end
+require "bundler"
+Bundler::GemHelper.install_tasks

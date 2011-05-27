@@ -1,6 +1,11 @@
+# -*- encoding: utf-8 -*-
+$:.push File.expand_path("../lib", __FILE__)
+require "pathological/version"
+
 Gem::Specification.new do |s|
   s.name = "pathological"
-  s.version = "0.1.0"
+  s.version = Pathological::VERSION
+  s.platform    = Gem::Platform::RUBY
 
   s.required_rubygems_version = Gem::Requirement.new(">=0") if s.respond_to? :required_rubygems_version=
   s.specification_version = 2 if s.respond_to? :specification_version=
@@ -16,13 +21,9 @@ Gem::Specification.new do |s|
     indicates all directories to include in the load path.
   DESCRIPTION
 
-  s.files = %w[
-    README.md
-    TODO.md
-    LICENSE
-    Rakefile
-    pathological.gemspec
-    lib/pathological.rb
-    lib/pathological/base.rb
-  ]
+  s.files = `git ls-files`.split("\n").reject { |f| f == ".gitignore" }
+  s.require_paths = ["lib"]
+
+  s.add_development_dependency "rr", "~> 1.0.2"
+  s.add_development_dependency "scope", "~> 0.2.1"
 end

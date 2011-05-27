@@ -1,0 +1,20 @@
+PATH
+  remote: .
+  specs:
+    pathological (0.1.1)
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    minitest (2.1.0)
+    rr (1.0.2)
+    scope (0.2.1)
+      minitest
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  pathological!
+  rr (~> 1.0.2)
+  scope (~> 0.2.1)

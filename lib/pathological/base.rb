@@ -3,13 +3,18 @@ module Pathological
 
   class PathException < RuntimeError; end
 
-  def self.add_paths
+  def self.add_paths(load_path = $LOAD_PATH)
     root = find_pathfile
+    if root.nil?
+      # Don't raise an exception to avoid breakage when we're not in a Pathological project, but print a
+      # warning message
+      STDERR.puts 'Warning: `require "pathological"` used, but no Pathfile was found.'
+      return
+    end
     pathfile = File.join(root, PATHFILE_NAME)
-    raise PathException, "No Pathfile found." if pathfile.nil?
     pathfile_lines= File.open(pathfile).read.split("\n")
     paths = parse_pathfile(root, pathfile_lines)
-    paths.each { |path| $LOAD_PATH.unshift(path) unless $LOAD_PATH.include?(path) }
+    paths.each { |path| load_path.unshift(path) unless load_path.include?(path) }
   end
 
   # private module methods
