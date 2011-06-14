@@ -14,7 +14,7 @@ module Pathological
     pathfile = File.join(root, PATHFILE_NAME)
     pathfile_lines= File.open(pathfile).read.split("\n")
     paths = parse_pathfile(root, pathfile_lines)
-    paths.each { |path| load_path.unshift(path) unless load_path.include?(path) }
+    paths.each { |path| load_path.push(path) unless load_path.include?(path) }
   end
 
   # private module methods
