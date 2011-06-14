@@ -20,7 +20,7 @@ module Pathological
   # private module methods
 
   def self.find_pathfile
-    current_directory = ($0 == "irb") ? Dir.pwd : File.expand_path($0)
+    current_directory = ($0 == "irb") ? File.join(Dir.pwd, "irb") : File.expand_path($0)
     until current_directory == "/"
       current_directory = File.dirname(current_directory)
       pathfile = File.join(current_directory, PATHFILE_NAME)
