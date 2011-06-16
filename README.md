@@ -108,8 +108,11 @@ handy in these cases. In general, extra options are specified by lines in the `P
 Authors
 -------
 
-Pathological was written by Ooyala engineers [Daniel MacDougall](mailto:dmac@ooyala.com) and [Caleb
-Spare](mailto:caleb@ooyala.com).
+Pathological was written by the following Ooyala engineers:
+
+* [Daniel MacDougall](mailto:dmac@ooyala.com)
+* [Caleb Spare](mailto:caleb@ooyala.com)
+* [Sami Abu-El-Haija](mailto:sami@ooyala.com)
 
 Credits
 -------
