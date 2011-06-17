@@ -32,13 +32,11 @@ Getting started with pathological is easy. First, make a file called `Pathfile` 
 
 Now require the gem at the start of any executable ruby file:
 
-``` ruby
-#!/usr/bin/env ruby
+    #!/usr/bin/env ruby
 
-require "rubygems" # If you're using 1.8
-require "pathological"
-# other requires...
-```
+    require "rubygems" # If you're using 1.8
+    require "pathological"
+    # other requires...
 
 Now your project root will be in your load path. If your project has, for example, `lib/foo.rb`, then `require
 lib/foo` will work in any of your ruby files. This works because when Pathological is required it will search
@@ -72,13 +70,11 @@ and that `Pathfile` contains the following:
 
 Then inside `run_my_project.rb`:
 
-``` ruby
-require "rubygems"
-require "pathological"
-require "foo"
-require "common"
-# ...
-```
+    require "rubygems"
+    require "pathological"
+    require "foo"
+    require "common"
+    # ...
 
 Installation
 ------------
