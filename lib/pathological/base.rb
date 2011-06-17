@@ -1,69 +1,138 @@
+require "pathname"
+
 module Pathological
   PATHFILE_NAME = "Pathfile"
 
-  class PathException < RuntimeError; end
+  # Debug mode -- print out information about load paths
+  @debug = false
 
-  def self.add_paths(load_path = $LOAD_PATH)
-    root = find_pathfile
-    if root.nil?
-      # Don't raise an exception to avoid breakage when we're not in a Pathological project, but print a
-      # warning message
-      STDERR.puts 'Warning: `require "pathological"` used, but no Pathfile was found.'
-      return
+  class PathologicalException < RuntimeError; end
+  class NoPathfileException < PathologicalException; end
+
+  # Add paths to the load path.
+  #
+  # @param [String] load_path the load path to use (default is $LOAD_PATH).
+  # @param [Array<String>] paths the array of new load paths (default is the result of {#find_load_paths}).
+  def self.add_paths(load_path = $LOAD_PATH, paths = find_load_paths)
+    paths.each do |path|
+      if load_path.include? path
+        debug "Skipping <#{path}>, which is already in the load path."
+      else
+        debug "Adding <#{path}> to load path."
+        load_path << path
+      end
     end
-    pathfile = File.join(root, PATHFILE_NAME)
-    pathfile_lines= File.open(pathfile).read.split("\n")
-    paths = parse_pathfile(root, pathfile_lines)
-    paths.each { |path| load_path << path unless load_path.include?(path) }
+  end
+
+  # For some pathfile, parse it and find all the load paths that it references.
+  #
+  # @param [String, nil] pathfile the pathfile to inspect. Uses {#find_pathfile} if `nil`.
+  # @return [Array<String>] the resulting array of paths.
+  def self.find_load_paths(pathfile = nil)
+    pathfile ||= find_pathfile
+    raise NoPathfileException if pathfile.nil?
+    begin
+      pathfile_handle = File.open(pathfile)
+    rescue Errno::ENOENT
+      raise NoPathfileException
+    rescue
+      raise PathologicalException, "There was an error opening the pathfile <#{pathfile}>."
+    end
+    parse_pathfile(pathfile_handle)
+  end
+
+  # Find the pathfile by searching up from a starting directory. Symlinks are expanded out.
+  #
+  # @param [String] directory the starting directory. Defaults to the directory containing the running file.
+  # @return [String, nil] the absolute path to the pathfile (if it exists), otherwise `nil`.
+  def self.find_pathfile(directory = File.dirname(File.expand_path($0)))
+    # If we're in IRB, use the working directory as the root of the search path for the Pathfile.
+    if $0 != __FILE__ && $0 == "irb"
+      directory = Dir.pwd
+      debug "In IRB -- using the cwd (#{directory}) as the search root for Pathfile."
+    end
+    return nil unless File.directory? directory
+    # Find the full, absolute path of this directory, resolving symlinks:
+    current_path = Pathname.new(File.expand_path(directory)).realpath.to_s
+    loop do
+      debug "Searching <#{current_path}> for Pathfile."
+      pathfile = File.join(current_path, PATHFILE_NAME)
+      if File.file? pathfile
+        debug "Pathfile found: <#{pathfile}>."
+        return pathfile
+      end
+      new_path = File.dirname current_path
+      if new_path == current_path
+        debug "Reached filesystem root, but no Pathfile found."
+        return nil
+      end
+      current_path = new_path
+    end
   end
 
   # private module methods
 
-  def self.find_pathfile
-    current_directory = ($0 == "irb") ? File.join(Dir.pwd, "irb") : File.expand_path($0)
-    until current_directory == "/"
-      current_directory = File.dirname(current_directory)
-      pathfile = File.join(current_directory, PATHFILE_NAME)
-      return current_directory if File.file? pathfile
-    end
-    nil
+  # Print debugging info
+  #
+  # @scope class
+  # @visibility private
+  # @param [String] message the debugging message
+  def self.debug(message)
+    puts "[Pathological Debug] >> #{message}" if @debug
   end
 
-  def self.parse_pathfile(root, pathfile_lines)
+  # Parse a pathfile and return the appropriate paths.
+  #
+  # @scope class
+  # @visibility private
+  # @param [IO] pathfile handle to the pathfile to parse
+  # @return [Array<String>] array of paths found, taking into account options specified.
+  def self.parse_pathfile(pathfile)
     options = { :exclude_root => false, :no_exceptions => false }
-    paths = [root]
-    pathfile_lines.each do |line|
+    root = File.dirname(Pathname.new(File.expand_path(pathfile.path)).realpath.to_s)
+    raw_paths = [root]
+    pathfile.each do |line|
       # Trim comments
       line = line.split(/#/, 2)[0].strip
       next if line.empty?
       if line.start_with? ">"
         set_option!(line[1..-1].strip, options)
       else
-        paths << File.expand_path(File.join(root, line))
+        raw_paths << File.expand_path(File.join(root, line))
       end
     end
 
-    paths.uniq!
-    unless options[:no_exceptions]
-      paths.each do |path|
-        unless File.directory? path
-          raise PathException, "Bad path in Pathfile: #{path}"
+    debug "Pathfile options: #{options.inspect}"
+    paths = []
+    raw_paths.each do |path|
+      unless File.directory? path
+        unless options[:no_exceptions]
+          raise PathologicalException, "Bad path in Pathfile: #{path}"
         end
+        debug "Ignoring non-existent path: #{path}"
+        next
       end
+      next if options[:exclude_root] && File.expand_path(path) == File.expand_path(root)
     end
     paths.reject! { |path| File.expand_path(path) == File.expand_path(root) } if options[:exclude_root]
     paths
   end
 
+  # Apply an option to the `options` hash.
+  #
+  # @scope class
+  # @visibility private
+  # @param [String] option the option to apply
+  # @param [Hash] options the options hash to mutate
   def self.set_option!(option, options)
     option = option.to_s.gsub("-", "_").to_sym
-    raise PathException, "Bad option: #{option}" unless options.include? option
+    raise PathologicalException, "Bad option: #{option}" unless options.include? option
     if options[option]
-      raise PathException, "Option set twice in Pathfile"
+      raise PathologicalException, "Option set twice in Pathfile"
     else
       options[option] = true
     end
   end
 
-  private_class_method :find_pathfile, :parse_pathfile, :set_option!
+  private_class_method :debug, :parse_pathfile, :set_option!
 end

@@ -2,6 +2,7 @@ require "rubygems"
 require "scope"
 require "rr"
 require "minitest/autorun"
+require "stringio"
 
 require "pathological/base"
 
@@ -14,7 +15,8 @@ module Pathological
     end
 
     def create_pathfile(text, path = "/a/b/c/Pathfile")
-      @pathfile = { :path => path, :contents => text.split("\n").map(&:strip).join("\n") }
+      pathfile = StringIO.new(text)
+      stub(pathfile).path { path }
     end
 
     def load!
