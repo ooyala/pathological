@@ -6,12 +6,45 @@ require "stringio"
 
 require "pathological/base"
 
+# Copy-pasted from RR Minitest adapter that I've submitted as a pull request to RR.
+# TODO(caleb): delete
+module RR
+  module Adapters
+    module MiniTest
+      include RRMethods
+      def self.included(mod)
+        RR.trim_backtrace = true
+        mod.class_eval do
+          unless instance_methods.any? { |method_name| method_name.to_sym == :setup_with_rr }
+            alias_method :setup_without_rr, :setup
+            def setup_with_rr
+              setup_without_rr
+              RR.reset
+            end
+            alias_method :setup, :setup_with_rr
+
+            alias_method :teardown_without_rr, :teardown
+            def teardown_with_rr
+              RR.verify
+              teardown_without_rr
+            end
+            alias_method :teardown, :teardown_with_rr
+          end
+        end
+      end
+
+      def assert_received(subject, &block)
+        block.call(received(subject)).call
+      end
+    end
+  end
+end
+
 module Pathological
   class BaseTest < Scope::TestCase
-    include RR::Adapters::RRMethods
-
-    def assert_load_paths_equal(this, other)
-      assert_equal this.uniq.sort, other.uniq.sort
+    include RR::Adapters::MiniTest
+    def assert_load_path(expected_load_path)
+      assert_equal expected_load_path, @load_path.uniq.sort
     end
 
     def create_pathfile(text, path = "/a/b/c/Pathfile")
@@ -19,102 +52,69 @@ module Pathological
       stub(pathfile).path { path }
     end
 
-    def load!
-      Pathological.add_paths(@load_path)
-    end
-
-    setup do
-      # Stubbed out our view of the filesystem for the pathfile
-      stub(File).open do |path|
-        if path == @pathfile[:path]
-          stub!.read { @pathfile[:contents] }
-        else
-          raise "file not found"
-        end
+    context "#add_paths" do
+      setup do
+        @load_path = []
       end
-      @current_file = "/a/b/c/myfile.rb"
-      @load_path = []
-      @stderr_output = []
-      @stderr = STDERR
-      stub(File).expand_path { |f| (f == $0) ? @current_file : f }
-      stub(File).file? { |path| path == @pathfile[:path] }
-      stub(File).directory? { |path| @directories.include?(path) }
-    end
 
-    context "loading pathological with no pathfile" do
-      should "not raise an error" do
-        create_pathfile("/a/b/d/Pathfile", "anything...")
-        @stderr = mock(STDERR).puts(/^Warning/)
-        load!
+      should "not raise an error but print a warning when there's no pathfile" do
+        mock(Pathological).find_pathfile { nil }
+        mock(STDERR).puts(anything) { |m| assert_match /^Warning/, m }
+        Pathological.add_paths @load_path
+        assert_load_path []
+      end
+
+      should "append the requested paths" do
+        paths = ["foo"]
+        Pathological.add_paths @load_path, paths
+        assert_load_path paths
+      end
+
+      should "append the paths that #find_load_paths finds" do
+        paths = ["foo"]
+        mock(Pathological).find_pathfile { paths }
+        Pathological.add_paths @load_path, paths
+        assert_load_path paths
       end
     end
 
-    # Let's break through the abstraction here for a second in order to separate testing the pathfile-location
-    # functionality from the other things.
+    context "#find_load_paths" do
+      should "raise a NoPathfileException on a nil pathfile" do
+        mock(Pathological).find_pathfile { nil }
+        assert_raises(NoPathfileException) { Pathological.find_load_paths(nil) }
+      end
+
+    end
+
     context "pathfile location function" do
       should "find a pathfile in this directory" do
-        create_pathfile("whatever, man", "/a/b/c/Pathfile")
-        assert_equal "/a/b/c", Pathological.send(:find_pathfile)
+
       end
 
       should "find a pathfile in a parent directory" do
-        create_pathfile("it's cool", "/a/b/Pathfile")
-        assert_equal "/a/b", Pathological.send(:find_pathfile)
       end
 
       should "find a pathfile at the root" do
-        create_pathfile("I DO WHAT I WANT", "/Pathfile")
-        assert_equal "/", Pathological.send(:find_pathfile)
       end
     end
 
     context "loading pathological" do
-      setup do
-        # Kinda ugly because of my ugly stubs for File#directory? and other methods
-        @directories = [ "/a/b/c", "/a/b/c/foo", "/a/b/c/../bar", "/a/b/d/baz" ]
-      end
-
       should "use an empty Pathfile correctly" do
-        create_pathfile("")
-        load!
-        assert_load_paths_equal [ "/a/b/c" ], @load_path
       end
 
       should "add some paths as appropriate" do
-        create_pathfile(<<-EOS)
-          foo
-          ../bar
-        EOS
-        load!
-        assert_load_paths_equal [ "/a/b/c", "/a/b/c/foo", "/a/b/c/../bar" ], @load_path
       end
 
       should "throw exceptions on bad load paths" do
-        create_pathfile("quux")
-        assert_raises(PathException) { load! }
       end
 
       should "allow bad paths with appropriate option" do
-        create_pathfile(<<-EOS)
-          > no-exceptions
-          quux
-        EOS
-        load!
-        assert_load_paths_equal [ "/a/b/c", "/a/b/c/quux" ], @load_path
       end
 
       should "exclude root with that option" do
-        create_pathfile(<<-EOS)
-          > exclude-root
-          foo
-        EOS
-        load!
-        assert_load_paths_equal [ "/a/b/c/foo", ], @load_path
       end
 
       should "raise an error with a bad option" do
-        create_pathfile("> asdf")
-        assert_raises(PathException) { load! }
       end
     end
   end

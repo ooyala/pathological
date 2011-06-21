@@ -12,8 +12,15 @@ module Pathological
   # Add paths to the load path.
   #
   # @param [String] load_path the load path to use (default is $LOAD_PATH).
-  # @param [Array<String>] paths the array of new load paths (default is the result of {#find_load_paths}).
-  def self.add_paths(load_path = $LOAD_PATH, paths = find_load_paths)
+  # @param [Array<String>] paths the array of new load paths (if nil, the result of {self#find_load_paths}).
+  # @return [void]
+  def self.add_paths(load_path = $LOAD_PATH, paths = nil)
+    begin
+      paths ||= find_load_paths
+    rescue NoPathfileException
+      STDERR.puts "Warning: using Pathological, but no Pathfile was found."
+      return
+    end
     paths.each do |path|
       if load_path.include? path
         debug "Skipping <#{path}>, which is already in the load path."
@@ -26,11 +33,11 @@ module Pathological
 
   # For some pathfile, parse it and find all the load paths that it references.
   #
-  # @param [String, nil] pathfile the pathfile to inspect. Uses {#find_pathfile} if `nil`.
+  # @param [String, nil] pathfile the pathfile to inspect. Uses {self#find_pathfile} if `nil`.
   # @return [Array<String>] the resulting array of paths.
   def self.find_load_paths(pathfile = nil)
     pathfile ||= find_pathfile
-    raise NoPathfileException if pathfile.nil?
+    raise NoPathfileException unless pathfile
     begin
       pathfile_handle = File.open(pathfile)
     rescue Errno::ENOENT
@@ -74,17 +81,16 @@ module Pathological
 
   # Print debugging info
   #
-  # @scope class
-  # @visibility private
+  # @private
   # @param [String] message the debugging message
+  # @return [void]
   def self.debug(message)
     puts "[Pathological Debug] >> #{message}" if @debug
   end
 
   # Parse a pathfile and return the appropriate paths.
   #
-  # @scope class
-  # @visibility private
+  # @private
   # @param [IO] pathfile handle to the pathfile to parse
   # @return [Array<String>] array of paths found, taking into account options specified.
   def self.parse_pathfile(pathfile)
@@ -120,10 +126,10 @@ module Pathological
 
   # Apply an option to the `options` hash.
   #
-  # @scope class
-  # @visibility private
+  # @private
   # @param [String] option the option to apply
   # @param [Hash] options the options hash to mutate
+  # @return [void]
   def self.set_option!(option, options)
     option = option.to_s.gsub("-", "_").to_sym
     raise PathologicalException, "Bad option: #{option}" unless options.include? option
