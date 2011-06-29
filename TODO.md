@@ -4,10 +4,11 @@ TODO
 Tasks
 -----
 
-  * Normalize paths (remove symlinks and unnecessary parts).
+  * Bundler compatibility.
   * Push to the Ooyala github account; release on rubygems.org
-  * Consider rewriting tests in a less hacktastic manner (probably using a real directories or mockfs or
-    something).
+  * Mode for adding one directory above given paths to the current.
+  * Public API:
+    * Get all loaded files that come from Pathological directories
 
 Design decisions
 ----------------
@@ -64,3 +65,6 @@ Design decisions
 
     **After chatting with some people, we're going to leave this as is and truncate the `shared_lib` from our
     paths. --Caleb**
+
+    **Actually, I think I'm going to add an optional mode to add one directory _above_ to the load path
+    instead of the given path, in order to accomomdate this use case. --Caleb**
