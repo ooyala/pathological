@@ -4,7 +4,7 @@ module Pathological
   PATHFILE_NAME = "Pathfile"
 
   # Debug mode -- print out information about load paths
-  @debug = false
+  @@debug = false
 
   class PathologicalException < RuntimeError; end
   class NoPathfileException < PathologicalException; end
@@ -85,7 +85,7 @@ module Pathological
   # @param [String] message the debugging message
   # @return [void]
   def self.debug(message)
-    puts "[Pathological Debug] >> #{message}" if @debug
+    puts "[Pathological Debug] >> #{message}" if @@debug
   end
 
   # Parse a pathfile and return the appropriate paths.

@@ -1,4 +1,4 @@
 require "pathological/base"
 
-Pathological.debug = true
+Pathological.class_variable_set(:@@debug, true)
 Pathological.add_paths
