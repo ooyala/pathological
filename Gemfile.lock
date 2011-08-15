@@ -8,8 +8,8 @@ GEM
   specs:
     minitest (2.1.0)
     rdiscount (1.6.8)
-    rr (1.0.2)
-    scope (0.2.1)
+    rr (1.0.3)
+    scope (0.2.2)
       minitest
     yard (0.7.2)
 
@@ -19,6 +19,6 @@ PLATFORMS
 DEPENDENCIES
   pathological!
   rdiscount (~> 1.6.8)
-  rr (~> 1.0.2)
-  scope (~> 0.2.1)
+  rr (~> 1.0.3)
+  scope (~> 0.2.2)
   yard (~> 0.7.2)
