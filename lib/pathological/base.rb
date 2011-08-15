@@ -51,16 +51,18 @@ module Pathological
   # Find the pathfile by searching up from a starting directory. Symlinks are expanded out.
   #
   # @param [String] directory the starting directory. Defaults to the directory containing the running file.
-  # @return [String, nil] the absolute path to the pathfile (if it exists), otherwise `nil`.
-  def self.find_pathfile(directory = File.dirname(File.expand_path($0)))
+  # @return [String, nil] the absolute path to the pathfile (if it exists), otherwise +nil+.
+  def self.find_pathfile(directory = nil)
     # If we're in IRB, use the working directory as the root of the search path for the Pathfile.
     if $0 != __FILE__ && $0 == "irb"
       directory = Dir.pwd
       debug "In IRB -- using the cwd (#{directory}) as the search root for Pathfile."
     end
-    return nil unless File.directory? directory
-    # Find the full, absolute path of this directory, resolving symlinks:
-    current_path = Pathname.new(File.expand_path(directory)).realpath.to_s
+    return nil if directory && !File.directory?(directory)
+    # Find the full, absolute path of this directory, resolving symlinks. If no directory was given, use the
+    # directory where the executed file resides.
+    full_path = real_path(directory || $0)
+    current_path = directory ? full_path : File.dirname(full_path)
     loop do
       debug "Searching <#{current_path}> for Pathfile."
       pathfile = File.join(current_path, PATHFILE_NAME)
@@ -84,9 +86,14 @@ module Pathological
   # @private
   # @param [String] message the debugging message
   # @return [void]
-  def self.debug(message)
-    puts "[Pathological Debug] >> #{message}" if @@debug
-  end
+  def self.debug(message); puts "[Pathological Debug] >> #{message}" if @@debug; end
+
+  # Turn a path into an absolute path with no useless parts and no symlinks.
+  #
+  # @private
+  # @param [String] the path
+  # @return [String] the absolute real path
+  def self.real_path(path); Pathname.new(path).realpath.to_s; end
 
   # Parse a pathfile and return the appropriate paths.
   #
@@ -95,7 +102,7 @@ module Pathological
   # @return [Array<String>] array of paths found, taking into account options specified.
   def self.parse_pathfile(pathfile)
     options = { :exclude_root => false, :no_exceptions => false }
-    root = File.dirname(Pathname.new(File.expand_path(pathfile.path)).realpath.to_s)
+    root = File.dirname(real_path(pathfile.path))
     raw_paths = [root]
     pathfile.each do |line|
       # Trim comments
@@ -104,7 +111,7 @@ module Pathological
       if line.start_with? ">"
         set_option!(line[1..-1].strip, options)
       else
-        raw_paths << File.expand_path(File.join(root, line))
+        raw_paths << File.expand_path(File.join(root, line.strip))
       end
     end
 
@@ -119,9 +126,9 @@ module Pathological
         next
       end
       next if options[:exclude_root] && File.expand_path(path) == File.expand_path(root)
+      paths << path
     end
-    paths.reject! { |path| File.expand_path(path) == File.expand_path(root) } if options[:exclude_root]
-    paths
+    options[:exclude_root] ? paths.reject { |path| File.expand_path(path) == File.expand_path(root) } : paths
   end
 
   # Apply an option to the `options` hash.

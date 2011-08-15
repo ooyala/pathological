@@ -4,6 +4,7 @@ TODO
 Tasks
 -----
 
+  * Normalize paths (remove symlinks and unnecessary parts).
   * Push to the Ooyala github account; release on rubygems.org
   * Consider rewriting tests in a less hacktastic manner (probably using a real directories or mockfs or
     something).
