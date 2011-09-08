@@ -11,9 +11,8 @@ module Pathological
 
   # Add paths to the load path.
   #
-  # @param [String] load_path the load path to use (default is $LOAD_PATH).
-  # @param [Array<String>] paths the array of new load paths (if nil, the result of {self#find_load_paths}).
-  # @return [void]
+  # @param [String] load_path the load path to use.
+  # @param [Array<String>] paths the array of new load paths (if +nil+, the result of {find_load_paths}).
   def self.add_paths(load_path = $LOAD_PATH, paths = nil)
     begin
       paths ||= find_load_paths
@@ -33,7 +32,7 @@ module Pathological
 
   # For some pathfile, parse it and find all the load paths that it references.
   #
-  # @param [String, nil] pathfile the pathfile to inspect. Uses {self#find_pathfile} if `nil`.
+  # @param [String, nil] pathfile the pathfile to inspect. Uses {find_pathfile} if +nil+.
   # @return [Array<String>] the resulting array of paths.
   def self.find_load_paths(pathfile = nil)
     pathfile ||= find_pathfile
@@ -131,11 +130,11 @@ module Pathological
     options[:exclude_root] ? paths.reject { |path| File.expand_path(path) == File.expand_path(root) } : paths
   end
 
-  # Apply an option to the `options` hash.
+  # Apply an option to the +options+ hash.
   #
   # @private
-  # @param [String] option the option to apply
-  # @param [Hash] options the options hash to mutate
+  # @param [String] option the option to apply.
+  # @param [Hash] options the options hash to mutate.
   # @return [void]
   def self.set_option!(option, options)
     option = option.to_s.gsub("-", "_").to_sym
