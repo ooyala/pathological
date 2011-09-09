@@ -4,11 +4,7 @@ TODO
 Tasks
 -----
 
-  * Bundler compatibility.
-  * Push to the Ooyala github account; release on rubygems.org
-  * Mode for adding one directory above given paths to the current.
-  * Public API:
-    * Get all loaded files that come from Pathological directories
+  * Get all loaded files that come from Pathological directories (probably only in 1.9)
 
 Design decisions
 ----------------
