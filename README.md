@@ -86,20 +86,60 @@ Pathological is packaged as a Rubygem and hence can be trivially installed with
 Advanced usage
 --------------
 
-In some cases, you might want slightly different behavior. There are a few other options that may come in
-handy in these cases. In general, extra options are specified by lines in the `Pathfile` starting with `>`.
-(Similarly, comments may be specified by `#`.)
+In some cases, you might want slightly different behavior. This customization is done through the use of
+custom modes. You may use any combination of modes.
 
-  1. `exclude-root`: exclude project root from the load path.
-  2. `no-exceptions`: don't raise exceptions on bad paths.
+#### debug
 
-#### Example
+This adds debugging statements to `STDOUT` that explain what Pathological is doing.
 
-    # My project Pathfile
-    > no-exceptions
-    > exclude-root  # Don't want the root directory
-    lib/            # Do include lib/
-    ../my_gems/     # Include my local gem directory, if it exists
+#### excluderoot
+
+In this mode, the project root (where the `Pathfile` is located) is not added to the load path (so only paths
+specified *in* the `Pathfile` will be loaded).
+
+#### noexceptions
+
+This is used if you don't want to raise exceptions if you have bad paths (i.e. non-existent paths or not
+directories) in your `Pathfile`.
+
+#### bundlerize
+
+Bundlerize mode enables Bundler to work with your project regardless of your current directory, in the same
+way as Pathological, by attempting to set the `BUNDLE_GEMFILE` environment variable to match the directory
+where the `Pathfile` is located. Note that you have to run this before requiring `bundler/setup`. Also, this
+will not take effect if you are running with `bundler exec`.
+
+#### parentdir
+
+This mode makes Pathological add the unique parents of all paths it finds (instead of the paths themselves).
+The purpose of parentdir is to enable Pathological to work in a drop-in fashion with legacy code written with
+all requires being relative to the root of the codebase. Note that this will allow one to require files
+located in any child of the parents, not just from the directories specified in the `Pathfile`. This mode
+should be avoided if possible.
+
+There are two ways to specify modes. First, you can enable any modes you want using the Pathological API:
+
+    require "pathological/base"
+    Pathological.debug_mode
+    Pathological.parentdir_mode
+    Pathological.add_paths!
+
+A quicker way is also provided: if you only need to use one special mode, then there is a dedicated file you
+can require:
+
+    require "pathological/bundlerize"
+
+Public API
+----------
+
+For even more configurable custom integration with Pathological, a public API is provided. See the generated
+documentation for details on the following public methods:
+
+    Pathological#add_paths!
+    Pathological#find_load_paths
+    Pathological#find_pathfile
+    Pathological#reset!
 
 Authors
 -------

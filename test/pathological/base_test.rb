@@ -17,6 +17,7 @@ module Pathological
     context "Pathological" do
       setup_once { FakeFS.activate! }
       setup do
+        Pathological.reset!
         @load_path = []
         FakeFS::FileSystem.clear
         # FakeFS has not implemented the necessary calls for Pathname#realpath to work.
@@ -133,24 +134,43 @@ module Pathological
           assert_raises(PathologicalException) { load_and_run! }
         end
 
-        should "allow bad paths with appropriate option" do
+        should "print some debug info in debug mode" do
+          Pathological.debug_mode
+          mock(Pathological).puts(anything).at_least(3)
+          Pathological.add_paths!
+        end
+
+        should "set $BUNDLE_GEMFILE correctly in bundlerize mode" do
+          FileUtils.touch "/Gemfile"
+          Pathological.bundlerize_mode
+          Pathological.add_paths!
+          assert_equal "/Gemfile", ENV["BUNDLE_GEMFILE"]
+        end
+
+        should "add the correct directories in parentdir mode" do
+          paths = ["/foo/bar/baz1", "/foo/bar/baz2", "/foo/quux"]
+          paths.each { |path| FileUtils.mkdir_p path }
+          @pathfile_contents = paths.join("\n")
+          Pathological.parentdir_mode
+          load_and_run!
+          assert_load_path ["/", "/foo/bar", "/foo"]
+        end
+
+        should "not raise exceptions on bad paths in noexceptions mode" do
           path = "/foo/bar"
-          @pathfile_contents << ["> no-exceptions", path].join("\n")
+          @pathfile_contents << path
+          Pathological.noexceptions_mode
           load_and_run!
           assert_load_path ["/"]
         end
 
-        should "exclude root with that option" do
+        should "not add the project root in excluderoot mode" do
           path = "/foo/bar"
           FileUtils.mkdir_p path
-          @pathfile_contents << ["> exclude-root", path].join("\n")
+          @pathfile_contents << path
+          Pathological.excluderoot_mode
           load_and_run!
           assert_load_path ["/foo/bar"]
-        end
-
-        should "raise an error with a bad option" do
-          @pathfile_contents << "> asdfasdf"
-          assert_raises(PathologicalException) { load_and_run! }
         end
       end
     end

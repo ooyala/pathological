@@ -3,8 +3,6 @@ require "pathname"
 module Pathological
   PATHFILE_NAME = "Pathfile"
 
-  # Debug mode -- print out information about load paths
-  @@debug = false
 
   class PathologicalException < RuntimeError; end
   class NoPathfileException < PathologicalException; end
@@ -26,6 +24,7 @@ module Pathological
       else
         debug "Adding <#{path}> to load path."
         load_path << path
+        @@loaded_paths << path
       end
     end
   end
@@ -78,6 +77,38 @@ module Pathological
     end
   end
 
+  # Convenience functions for the various modes in which Pathological may run.
+
+  def self.debug_mode; @@debug = true; end
+  def self.bundlerize_mode
+    pathfile = Pathological.find_pathfile
+    raise NoPathfileException unless pathfile
+    bundle_gemfile = File.join(File.dirname(pathfile), "Gemfile")
+    unless File.file? bundle_gemfile
+      raise PathologicalException, "No Gemfile found in #{File.dirname(pathfile)}."
+    end
+    ENV["BUNDLE_GEMFILE"] = bundle_gemfile
+  end
+  def self.parentdir_mode; @@add_parents = true; end
+  def self.noexceptions_mode; @@no_exceptions = true; end
+  def self.excluderoot_mode; @@exclude_root = true; end
+
+  # Reset all Pathological options (useful if you want to require a different Pathfile)
+  def self.reset!
+    # Debug mode -- print out information about load paths
+    @@debug = false
+    # Parentdir mode -- add unique parents of specified directories.
+    @@add_parents = false
+    # Noexceptions mode -- don't raise exceptions if the Pathfile contains bad paths
+    @@no_exceptions = false
+    # Excluderoot mode -- don't add the project root (where the Pathfile lives) to the load path
+    @@exclude_root = false
+
+    @@loaded_paths ||= []
+    @@loaded_paths.each { |path| $LOAD_PATH.delete path }
+    @@loaded_paths = []
+  end
+
   # private module methods
 
   # Print debugging info
@@ -98,53 +129,35 @@ module Pathological
   #
   # @private
   # @param [IO] pathfile handle to the pathfile to parse
-  # @return [Array<String>] array of paths found, taking into account options specified.
+  # @return [Array<String>] array of paths found
   def self.parse_pathfile(pathfile)
-    options = { :exclude_root => false, :no_exceptions => false }
     root = File.dirname(real_path(pathfile.path))
     raw_paths = [root]
     pathfile.each do |line|
       # Trim comments
       line = line.split(/#/, 2)[0].strip
       next if line.empty?
-      if line.start_with? ">"
-        set_option!(line[1..-1].strip, options)
-      else
-        raw_paths << File.expand_path(File.join(root, line.strip))
-      end
+      raw_path = File.expand_path(File.join(root, line.strip))
+      raw_paths << (@@add_parents ? File.dirname(raw_path) : raw_path)
     end
 
-    debug "Pathfile options: #{options.inspect}"
     paths = []
     raw_paths.each do |path|
       unless File.directory? path
-        unless options[:no_exceptions]
+        unless @@no_exceptions
           raise PathologicalException, "Bad path in Pathfile: #{path}"
         end
         debug "Ignoring non-existent path: #{path}"
         next
       end
-      next if options[:exclude_root] && File.expand_path(path) == File.expand_path(root)
+      next if @@exclude_root && File.expand_path(path) == File.expand_path(root)
       paths << path
     end
-    options[:exclude_root] ? paths.reject { |path| File.expand_path(path) == File.expand_path(root) } : paths
+    @@exclude_root ? paths.reject { |path| File.expand_path(path) == File.expand_path(root) } : paths
   end
 
-  # Apply an option to the +options+ hash.
-  #
-  # @private
-  # @param [String] option the option to apply.
-  # @param [Hash] options the options hash to mutate.
-  # @return [void]
-  def self.set_option!(option, options)
-    option = option.to_s.gsub("-", "_").to_sym
-    raise PathologicalException, "Bad option: #{option}" unless options.include? option
-    if options[option]
-      raise PathologicalException, "Option set twice in Pathfile"
-    else
-      options[option] = true
-    end
-  end
+  private_class_method :debug, :real_path, :parse_pathfile
 
-  private_class_method :debug, :parse_pathfile, :set_option!
+  # Reset options
+  Pathological.reset!
 end
