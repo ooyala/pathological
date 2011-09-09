@@ -1,3 +1,3 @@
 require "pathological/base"
 
-Pathological.add_paths
+Pathological.add_paths!
