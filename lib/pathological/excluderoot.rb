@@ -1,4 +1,4 @@
 require "pathological/base"
 
-Pathological.debug_mode
+Pathological.excluderoot_mode
 Pathological.add_paths!
