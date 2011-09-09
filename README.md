@@ -166,7 +166,7 @@ Contributing
 ------------
 
 If you would like to commit a patch, great! Just do the usual github pull request stuff and we'll check it
-out.
+out[.](http://www.randomkittengenerator.com/)
 
 License
 -------
