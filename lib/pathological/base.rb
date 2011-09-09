@@ -3,7 +3,6 @@ require "pathname"
 module Pathological
   PATHFILE_NAME = "Pathfile"
 
-
   class PathologicalException < RuntimeError; end
   class NoPathfileException < PathologicalException; end
 
