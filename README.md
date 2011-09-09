@@ -108,7 +108,7 @@ directories) in your `Pathfile`.
 Bundlerize mode enables Bundler to work with your project regardless of your current directory, in the same
 way as Pathological, by attempting to set the `BUNDLE_GEMFILE` environment variable to match the directory
 where the `Pathfile` is located. Note that you have to run this before requiring `bundler/setup`. Also, this
-will not take effect if you are running with `bundler exec`.
+will not take effect if you are running with `bundle exec`.
 
 #### parentdir
 
