@@ -13,7 +13,7 @@ module Pathological
   #
   # @param [String] load_path the load path to use.
   # @param [Array<String>] paths the array of new load paths (if +nil+, the result of {find_load_paths}).
-  def self.add_paths(load_path = $LOAD_PATH, paths = nil)
+  def self.add_paths!(load_path = $LOAD_PATH, paths = nil)
     begin
       paths ||= find_load_paths
     rescue NoPathfileException

@@ -24,24 +24,24 @@ module Pathological
       end
       teardown_once { FakeFS.deactivate! }
 
-      context "#add_paths" do
+      context "#add_paths!" do
         should "not raise an error but print a warning when there's no pathfile" do
           mock(Pathological).find_pathfile { nil }
           mock(STDERR).puts(anything) { |m| assert_match /^Warning/, m }
-          Pathological.add_paths @load_path
+          Pathological.add_paths! @load_path
           assert_load_path []
         end
 
         should "append the requested paths" do
           paths = ["foo"]
-          Pathological.add_paths @load_path, paths
+          Pathological.add_paths! @load_path, paths
           assert_load_path paths
         end
 
         should "append the paths that #find_load_paths finds" do
           paths = ["foo"]
           mock(Pathological).find_load_paths { paths }
-          Pathological.add_paths @load_path
+          Pathological.add_paths! @load_path
           assert_load_path paths
         end
       end
@@ -109,7 +109,7 @@ module Pathological
         # Load in pathfile contents and load Pathological
         def load_and_run!
           File.open(@pathfile, "w") { |f| f.write(@pathfile_contents) }
-          Pathological.add_paths(@load_path)
+          Pathological.add_paths!(@load_path)
         end
 
         should "use an empty Pathfile correctly" do
