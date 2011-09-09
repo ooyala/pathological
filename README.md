@@ -153,7 +153,14 @@ Pathological was written by the following Ooyala engineers:
 Credits
 -------
 
-  * Harry Robertson for the idea to *not* use a dot-prefixed configuration file
+* Harry Robertson for the idea to *not* use a dot-prefixed configuration file
+
+Metadata
+--------
+
+* [Hosted on Github](https://github.com/ooyala/pathological)
+* [Rubygems page](https://rubygems.org/gems/pathological)
+* [Documentation](http://rubydoc.info/github/ooyala/pathological/master/frames)
 
 Contributing
 ------------
