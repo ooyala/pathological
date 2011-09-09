@@ -5,6 +5,8 @@ require "minitest/autorun"
 require "stringio"
 require "fakefs/safe"
 
+# It's kind of funny that we need to do this hack, given that Pathological is intended to work around it...
+$:.unshift(File.join(File.dirname(__FILE__), "../../lib"))
 require "pathological/base"
 
 module Pathological
