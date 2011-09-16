@@ -1,18 +1,16 @@
 PATH
   remote: .
   specs:
-    pathological (0.1.4)
+    pathological (0.2.2)
 
 GEM
   remote: http://rubygems.org/
   specs:
     fakefs (0.4.0)
     minitest (2.5.1)
-    rdiscount (1.6.8)
     rr (1.0.3)
     scope (0.2.3)
       minitest
-    yard (0.7.2)
 
 PLATFORMS
   ruby
@@ -20,7 +18,5 @@ PLATFORMS
 DEPENDENCIES
   fakefs
   pathological!
-  rdiscount (~> 1.6.8)
   rr (>= 1.0.3)
   scope (>= 0.2.3)
-  yard (~> 0.7.2)

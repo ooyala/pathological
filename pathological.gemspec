@@ -27,7 +27,5 @@ Gem::Specification.new do |s|
   # Require rr >= 1.0.3 and scope >= 0.2.3 for mutual compatibility.
   s.add_development_dependency "rr", ">= 1.0.3"
   s.add_development_dependency "scope", ">= 0.2.3"
-  s.add_development_dependency "yard", "~> 0.7.2"
-  s.add_development_dependency "rdiscount", "~> 1.6.8"
   s.add_development_dependency "fakefs"
 end
