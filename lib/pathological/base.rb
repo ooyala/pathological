@@ -57,8 +57,8 @@ module Pathological
     end
     return nil if directory && !File.directory?(directory)
     # Find the full, absolute path of this directory, resolving symlinks. If no directory was given, use the
-    # directory where the executed file resides.
-    full_path = real_path(directory || $0)
+    # directory where the file requiring pathological resides.
+    full_path = real_path(directory || requiring_filename)
     current_path = directory ? full_path : File.dirname(full_path)
     loop do
       debug "Searching <#{current_path}> for Pathfile."
@@ -153,6 +153,18 @@ module Pathological
       paths << path
     end
     @@exclude_root ? paths.reject { |path| File.expand_path(path) == File.expand_path(root) } : paths
+  end
+
+  # Searches the call stack for the file that required pathological.
+  # If no file can be found, falls back to the currently executing file ($0).
+  # This handles the case where the app was launched by another executable (rake, thin, rackup, etc.)
+  #
+  # @return [String] name of file requiring pathological, or the currently executing file.
+  def self.requiring_filename
+    requiring_file = Kernel.caller.find do |stack_line|
+      stack_line.include?("top (required)") && !stack_line.include?("pathological.rb")
+    end
+    requiring_file ? requiring_file.match(/(.+):\d+:in/)[1] : $0 rescue $0
   end
 
   private_class_method :debug, :real_path, :parse_pathfile

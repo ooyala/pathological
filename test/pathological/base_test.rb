@@ -100,6 +100,41 @@ module Pathological
         end
       end
 
+      context "#requiring_filename" do
+        setup do
+          @full_stacktrace = %Q{
+/Users/test/ruby/gems/1.9.1/gems/pathological-0.2.2.1/lib/pathological/base.rb:61:in `find_pathfile'
+/Users/test/gems/pathological-0.2.2.1/lib/pathological/base.rb:36:in `find_load_paths'
+/Users/test/gems/pathological-0.2.2.1/lib/pathological/base.rb:15:in `add_paths!'
+/Users/test/gems/pathological-0.2.2.1/lib/pathological.rb:3:in `<top (required)>'
+/Users/test/ruby/1.9.1/rubygems/custom_require.rb:59:in `require'
+/Users/test/ruby/1.9.1/rubygems/custom_require.rb:59:in `rescue in require'
+/Users/test/ruby/1.9.1/rubygems/custom_require.rb:35:in `require'
+/Users/test/repos/pathological/test/rackup/app.rb:1:in `<top (required)>'
+/Users/test/.rubies/1.9.2-p290/lib/ruby/site_ruby/1.9.1/rubygems/custom_require.rb:36:in `require'
+          }.split("\n")
+          @bad_stacktrace = %Q{
+/Users/test/repos/pathological/test/rackup/app.rb !!! `<top (required)>'
+          }.split("\n")
+          @empty_stacktrace = []
+        end
+
+        should "find root file from a stacktrace" do
+          stub(Kernel).caller { @full_stacktrace }
+          assert_equal "app.rb", File.basename(Pathological.requiring_filename)
+        end
+
+        should "return executing file from malformed stacktrace" do
+          stub(Kernel).caller { @bad_stacktrace }
+          assert Pathological.requiring_filename
+        end
+
+        should "return executing file if unable to find root file in stacktrace" do
+          stub(Kernel).caller { @empty_stacktrace }
+          assert Pathological.requiring_filename
+        end
+      end
+
       context "loading pathological" do
         setup do
           @pathfile_contents = ""
