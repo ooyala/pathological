@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    pathological (0.2.3)
+    pathological (0.2.4)
 
 GEM
   remote: http://rubygems.org/

@@ -76,6 +76,52 @@ module Pathological
     end
   end
 
+  # Copies directories in pathfile to a staging dir, such that the staging dir has no
+  # references to directories outside of the staging dir in the load path.
+  # A new Pathfile will be written at the root of the staging dir, with new paths replacing
+  # the original ones.
+  # This is very useful for deployment, for example.
+  #
+  # @param [String] staging_dir the directory to stage dependencies in
+  # @param [String] dependency_dir the subdir within staging_dir to put dependencies in
+  def self.copy_paths_to_staging(staging_dir, dependency_dir = "pathological_dependencies")
+    saved_exclude_root = @@exclude_root
+    begin
+      self.excluderoot_mode
+      pathfile = self.find_pathfile
+      # Nothing to do if there's no Pathfile
+      return unless pathfile
+      return unless File.file? pathfile
+
+      foreign_paths = self.find_load_paths(pathfile).uniq
+      # Nothing to do if there's nothing in the Pathfile.
+      return if foreign_paths.empty?
+
+      path_root = File.join(staging_dir, dependency_dir)
+      FileUtils.mkdir_p path_root
+
+      # Copy in each path as a symlink and save the relative paths to write to the rewritten Pathfile. We
+      # symlink each unique path into the folder not as the basename, but as the longest suffix of the path
+      # necessary to make it unique. (Otherwise this won't work if you have two entries with the same basename
+      # in the Pathfile, such as "foo/lib" and "bar/lib".)
+      common_prefix = find_longest_common_prefix(foreign_paths)
+      new_pathfile_paths = foreign_paths.map do |foreign_path|
+        path_short_name = foreign_path.gsub(/^#{common_prefix}/, "")
+        symlinked_name = File.join(path_root, path_short_name)
+        FileUtils.mkdir_p File.split(symlinked_name)[0]
+        debug "About to move #{foreign_path} to #{symlinked_name}..."
+        copy_directory(foreign_path, symlinked_name)
+        File.join(dependency_dir, path_short_name)
+      end
+      # Overwrite the Pathfile with the new relative paths.
+      File.open(File.join(staging_dir, "Pathfile"), "w") do |file|
+        new_pathfile_paths.each { |path| file.puts path }
+      end
+    ensure
+      @@exclude_root = saved_exclude_root
+    end
+  end
+
   # Convenience functions for the various modes in which Pathological may run.
 
   def self.debug_mode; @@debug = true; end
@@ -155,6 +201,33 @@ module Pathological
     @@exclude_root ? paths.reject { |path| File.expand_path(path) == File.expand_path(root) } : paths
   end
 
+  # Find the longest common path prefix amongst a list of paths
+  #
+  # @private
+  # @param [List<String>] a list of paths
+  # @return [String] the longest common prefix, or "/"
+  def self.find_longest_common_prefix(paths)
+    if paths.size == 1
+      common_prefix = File.split(paths[0])[0]
+    else
+      common_prefix = "/"
+      paths[0].split("/").reject(&:empty?).each do |part|
+        new_prefix = "#{common_prefix}#{part}/"
+        break unless paths.all? { |path| path.start_with? new_prefix }
+        common_prefix = new_prefix
+      end
+    end
+    common_prefix
+  end
+
+  # Copies a directory and all its symlinks to a destination.
+  # @private
+  def self.copy_directory(source, dest)
+    rsync_command =
+        "rsync -r --archive --links --copy-unsafe-links --delete #{source}/ '#{dest}'"
+    debug `#{rsync_command}`
+  end
+
   # Searches the call stack for the file that required pathological.
   # If no file can be found, falls back to the currently executing file ($0).
   # This handles the case where the app was launched by another executable (rake, thin, rackup, etc.)
@@ -173,7 +246,8 @@ module Pathological
     requiring_file ? requiring_file.match(/(.+):\d+/)[1] : $0 rescue $0
   end
 
-  private_class_method :debug, :real_path, :parse_pathfile
+  private_class_method :debug, :real_path, :parse_pathfile, :find_longest_common_prefix
+  private_class_method :copy_directory
 
   # Reset options
   Pathological.reset!
