@@ -10,8 +10,8 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">=0") if s.respond_to? :required_rubygems_version=
   s.specification_version = 2 if s.respond_to? :specification_version=
 
-  s.authors = "Daniel MacDougall", "Caleb Spare"
-  s.email = "dmac@ooyala.com", "caleb@ooyala.com"
+  s.authors = "Daniel MacDougall", "Caleb Spare", "Evan Chan"
+  s.email = "dmac@ooyala.com", "caleb@ooyala.com", "ev@ooyala.com"
   s.homepage = "http://www.ooyala.com"
   s.rubyforge_project = "pathological"
 

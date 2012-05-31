@@ -150,6 +150,7 @@ Pathological was written by the following Ooyala engineers:
 * [Daniel MacDougall](mailto:dmac@ooyala.com)
 * [Caleb Spare](mailto:caleb@ooyala.com)
 * [Sami Abu-El-Haija](mailto:sami@ooyala.com)
+* [Evan Chan](mailto:ev@ooyala.com)
 
 Credits
 -------
