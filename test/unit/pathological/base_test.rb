@@ -225,13 +225,13 @@ module Pathological
 
         should "return immediately if there is no Pathfile" do
           mock(Pathological).find_pathfile { nil }
-          Pathological.copy_paths_to_staging @staging_dir
+          Pathological.copy_paths_to_staging! @staging_dir
           assert !File.directory?(File.join(@staging_dir, "pathological_dependencies"))
         end
 
         should "return immediately if Pathfile is empty" do
           File.open(@pathfile, "w") { |f| f.puts "\n# What the heck is this file?\n\n" }
-          Pathological.copy_paths_to_staging @staging_dir
+          Pathological.copy_paths_to_staging! @staging_dir
           assert !File.directory?(File.join(@staging_dir, "pathological_dependencies"))
         end
 
@@ -242,7 +242,7 @@ module Pathological
           @src_dirs.each do |src_dir|
             mock(Pathological).copy_directory(src_dir, deps_dir + src_dir.gsub("/src", "")).once
           end
-          Pathological.copy_paths_to_staging @staging_dir
+          Pathological.copy_paths_to_staging! @staging_dir
 
           assert_equal true, File.directory?(deps_dir)
           dest_paths = @src_dirs.map { |src_dir| %Q[pathological_dependencies#{src_dir.gsub("/src", "")}] }

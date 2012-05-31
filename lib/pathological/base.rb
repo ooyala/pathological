@@ -84,7 +84,7 @@ module Pathological
   #
   # @param [String] staging_dir the directory to stage dependencies in
   # @param [String] dependency_dir the subdir within staging_dir to put dependencies in
-  def self.copy_paths_to_staging(staging_dir, dependency_dir = "pathological_dependencies")
+  def self.copy_paths_to_staging!(staging_dir, dependency_dir = "pathological_dependencies")
     saved_exclude_root = @@exclude_root
     begin
       self.excluderoot_mode
