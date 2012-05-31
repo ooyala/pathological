@@ -1,13 +1,14 @@
 PATH
   remote: .
   specs:
-    pathological (0.2.4)
+    pathological (0.2.5)
 
 GEM
   remote: http://rubygems.org/
   specs:
     fakefs (0.4.0)
     minitest (2.5.1)
+    rake (0.9.2.2)
     rr (1.0.3)
     scope (0.2.3)
       minitest
@@ -18,5 +19,6 @@ PLATFORMS
 DEPENDENCIES
   fakefs
   pathological!
+  rake
   rr (>= 1.0.3)
   scope (>= 0.2.3)
