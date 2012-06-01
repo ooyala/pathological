@@ -76,32 +76,37 @@ module Pathological
     end
   end
 
-  # Copies directories in pathfile to a staging dir, such that the staging dir has no
-  # references to directories outside of the staging dir in the load path.
-  # A new Pathfile will be written at the root of the staging dir, with new paths replacing
-  # the original ones.
+  # Copies directories in pathfile to a destination, such that the destination has no
+  # references to directories outside of the destination in the load path.
+  # Hierarchy of destination directory:
+  #   destination/
+  #      Pathfile     # new paths
+  #      dependency_directory/
+  #         dependency1         # Copied from original location
+  #
   # This is very useful for deployment, for example.
   #
-  # @param [String] staging_dir the directory to stage dependencies in
-  # @param [String] dependency_dir the subdir within staging_dir to put dependencies in
-  def self.copy_paths_to_staging!(staging_dir, dependency_dir = "pathological_dependencies")
+  # @param [String] copy_outside_paths the directory to stage dependencies in
+  # @param [String] dependency_directory the subdir within destination to put dependencies in
+  #
+  # TODO(ev): Break this function up into a set of more functional primitives
+  def self.copy_outside_paths!(destination, dependency_directory = "pathological_dependencies")
     saved_exclude_root = @@exclude_root
     begin
       self.excluderoot_mode
       pathfile = self.find_pathfile
       # Nothing to do if there's no Pathfile
-      return unless pathfile
-      return unless File.file? pathfile
+      return unless pathfile && File.file?(pathfile)
 
       foreign_paths = self.find_load_paths(pathfile).uniq
       # Nothing to do if there's nothing in the Pathfile.
       return if foreign_paths.empty?
 
-      path_root = File.join(staging_dir, dependency_dir)
+      path_root = File.join(destination, dependency_directory)
       FileUtils.mkdir_p path_root
 
-      # Copy in each path as a symlink and save the relative paths to write to the rewritten Pathfile. We
-      # symlink each unique path into the folder not as the basename, but as the longest suffix of the path
+      # Copy in each path and save the relative paths to write to the rewritten Pathfile. We
+      # copy each unique path into the folder not as the basename, but as the longest suffix of the path
       # necessary to make it unique. (Otherwise this won't work if you have two entries with the same basename
       # in the Pathfile, such as "foo/lib" and "bar/lib".)
       common_prefix = find_longest_common_prefix(foreign_paths)
@@ -111,10 +116,10 @@ module Pathological
         FileUtils.mkdir_p File.split(symlinked_name)[0]
         debug "About to move #{foreign_path} to #{symlinked_name}..."
         copy_directory(foreign_path, symlinked_name)
-        File.join(dependency_dir, path_short_name)
+        File.join(dependency_directory, path_short_name)
       end
       # Overwrite the Pathfile with the new relative paths.
-      File.open(File.join(staging_dir, "Pathfile"), "w") do |file|
+      File.open(File.join(destination, "Pathfile"), "w") do |file|
         new_pathfile_paths.each { |path| file.puts path }
       end
     ensure
@@ -223,8 +228,7 @@ module Pathological
   # Copies a directory and all its symlinks to a destination.
   # @private
   def self.copy_directory(source, dest)
-    rsync_command =
-        "rsync -r --archive --links --copy-unsafe-links --delete #{source}/ '#{dest}'"
+    rsync_command = "rsync -r --archive --links --copy-unsafe-links --delete #{source}/ '#{dest}'"
     debug `#{rsync_command}`
   end
 
@@ -246,8 +250,7 @@ module Pathological
     requiring_file ? requiring_file.match(/(.+):\d+/)[1] : $0 rescue $0
   end
 
-  private_class_method :debug, :real_path, :parse_pathfile, :find_longest_common_prefix
-  private_class_method :copy_directory
+  private_class_method :debug, :real_path, :parse_pathfile, :find_longest_common_prefix, :copy_directory
 
   # Reset options
   Pathological.reset!

@@ -211,42 +211,42 @@ module Pathological
         end
       end
 
-      context "#copy_paths_to_staging" do
+      context "#copy_outside_paths!" do
         setup do
-          @staging_dir = "/tmp/staging"
+          @destination = "/tmp/staging"
           @pathfile = "/Pathfile"
           FileUtils.cd "/"
-          FileUtils.mkdir_p @staging_dir
-          @src_dirs = ["/src/github1", "/src/moofoo"]
-          @src_dirs.each do |src_dir|
-            FileUtils.mkdir_p src_dir
-          end
+          FileUtils.mkdir_p @destination
+          @source_paths = ["/src/github1", "/src/moofoo"]
+          @source_paths.each { |src_dir| FileUtils.mkdir_p src_dir }
         end
 
         should "return immediately if there is no Pathfile" do
           mock(Pathological).find_pathfile { nil }
-          Pathological.copy_paths_to_staging! @staging_dir
-          assert !File.directory?(File.join(@staging_dir, "pathological_dependencies"))
+          Pathological.copy_outside_paths! @destination
+          refute File.directory?(File.join(@destination, "pathological_dependencies"))
         end
 
         should "return immediately if Pathfile is empty" do
           File.open(@pathfile, "w") { |f| f.puts "\n# What the heck is this file?\n\n" }
-          Pathological.copy_paths_to_staging! @staging_dir
-          assert !File.directory?(File.join(@staging_dir, "pathological_dependencies"))
+          Pathological.copy_outside_paths! @destination
+          refute File.directory?(File.join(@destination, "pathological_dependencies"))
         end
 
         should "copy source dirs as links and rewrite Pathfile" do
-          File.open(@pathfile, "w") { |f| f.puts @src_dirs.join("\n") }
+          File.open(@pathfile, "w") { |f| f.puts @source_paths.join("\n") }
 
-          deps_dir = File.join(@staging_dir, "pathological_dependencies")
-          @src_dirs.each do |src_dir|
-            mock(Pathological).copy_directory(src_dir, deps_dir + src_dir.gsub("/src", "")).once
+          final_path = File.join(@destination, "pathological_dependencies")
+          @source_paths.each do |source_path|
+            mock(Pathological).copy_directory(source_path, final_path + source_path.gsub("/src", "")).once
           end
-          Pathological.copy_paths_to_staging! @staging_dir
+          Pathological.copy_outside_paths! @destination
 
-          assert_equal true, File.directory?(deps_dir)
-          dest_paths = @src_dirs.map { |src_dir| %Q[pathological_dependencies#{src_dir.gsub("/src", "")}] }
-          assert_equal dest_paths, File.read(File.join(@staging_dir, "Pathfile")).split("\n")
+          assert File.directory?(final_path)
+          dest_paths = @source_paths.map do |source_path|
+            "pathological_dependencies#{source_path.gsub("/src", "")}"
+          end
+          assert_equal dest_paths, File.read(File.join(@destination, "Pathfile")).split("\n")
         end
       end
     end
