@@ -243,10 +243,10 @@ module Pathological
           Pathological.copy_outside_paths! @destination
 
           assert File.directory?(final_path)
-          dest_paths = @source_paths.map do |source_path|
+          destination_paths = @source_paths.map do |source_path|
             "pathological_dependencies#{source_path.gsub("/src", "")}"
           end
-          assert_equal dest_paths, File.read(File.join(@destination, "Pathfile")).split("\n")
+          assert_equal destination_paths, File.read(File.join(@destination, "Pathfile")).split("\n")
         end
       end
     end

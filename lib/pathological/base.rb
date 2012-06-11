@@ -76,8 +76,9 @@ module Pathological
     end
   end
 
-  # Copies directories in pathfile to a destination, such that the destination has no
-  # references to directories outside of the destination in the load path.
+  # Copies directories in pathfile to a destination, such that the destination has no references to
+  # directories outside of the destination in the load path.
+  #
   # Hierarchy of destination directory:
   #   destination/
   #      Pathfile     # new paths
@@ -99,16 +100,15 @@ module Pathological
       return unless pathfile && File.file?(pathfile)
 
       foreign_paths = self.find_load_paths(pathfile).uniq
-      # Nothing to do if there's nothing in the Pathfile.
       return if foreign_paths.empty?
 
       path_root = File.join(destination, dependency_directory)
       FileUtils.mkdir_p path_root
 
-      # Copy in each path and save the relative paths to write to the rewritten Pathfile. We
-      # copy each unique path into the folder not as the basename, but as the longest suffix of the path
-      # necessary to make it unique. (Otherwise this won't work if you have two entries with the same basename
-      # in the Pathfile, such as "foo/lib" and "bar/lib".)
+      # Copy in each path and save the relative paths to write to the rewritten Pathfile. We copy each unique
+      # path into the folder not as the basename, but as the longest suffix of the path necessary to make it
+      # unique. (Otherwise this won't work if you have two entries with the same basename in the Pathfile,
+      # such as "foo/lib" and "bar/lib".)
       common_prefix = find_longest_common_prefix(foreign_paths)
       new_pathfile_paths = foreign_paths.map do |foreign_path|
         path_short_name = foreign_path.gsub(/^#{common_prefix}/, "")
