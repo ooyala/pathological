@@ -232,9 +232,9 @@ module Pathological
     debug `#{rsync_command}`
   end
 
-  # Searches the call stack for the file that required pathological.
-  # If no file can be found, falls back to the currently executing file ($0).
-  # This handles the case where the app was launched by another executable (rake, thin, rackup, etc.)
+  # Searches the call stack for the file that required pathological. If no file can be found, falls back to
+  # the currently executing file ($0). This handles the case where the app was launched by another executable
+  # (rake, thin, rackup, etc.)
   #
   # @return [String] name of file requiring pathological, or the currently executing file.
   def self.requiring_filename
