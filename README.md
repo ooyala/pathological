@@ -32,15 +32,22 @@ Getting started with pathological is easy. First, make a file called `Pathfile` 
 
 Now require the gem at the start of any executable ruby file:
 
-    #!/usr/bin/env ruby
+``` ruby
+#!/usr/bin/env ruby
 
-    require "rubygems" # If you're using 1.8
-    require "pathological"
-    # other requires...
+require "bundler/setup" # If you're using bundler
+require "pathological"
+
+# other requires...
+```
 
 Now your project root will be in your load path. If your project has, for example, `lib/foo.rb`, then `require
 lib/foo` will work in any of your ruby files. This works because when Pathological is required it will search
 up the directory tree until it finds a `Pathfile`. (It will raise an error if one cannot be found).
+
+Note that Pathological should be the first require in your main file so that it will be loaded first. An
+exception to this is when you're using Bundler, in which case you should `require bundler/setup` before
+Pathological (and of course you should have `gem "pathological"` in your `Gemfile`).
 
 `Pathfile`s should be kept in version control.
 
@@ -70,11 +77,12 @@ and that `Pathfile` contains the following:
 
 Then inside `run_my_project.rb`:
 
-    require "rubygems"
-    require "pathological"
-    require "foo"
-    require "common"
-    # ...
+``` ruby
+require "pathological"
+require "foo"
+require "common"
+# ...
+```
 
 Installation
 ------------
@@ -120,15 +128,19 @@ should be avoided if possible.
 
 There are two ways to specify modes. First, you can enable any modes you want using the Pathological API:
 
-    require "pathological/base"
-    Pathological.debug_mode
-    Pathological.parentdir_mode
-    Pathological.add_paths!
+``` ruby
+require "pathological/base"
+Pathological.debug_mode
+Pathological.parentdir_mode
+Pathological.add_paths!
+```
 
 A quicker way is also provided: if you only need to use one special mode, then there is a dedicated file you
 can require:
 
-    require "pathological/bundlerize"
+``` ruby
+require "pathological/bundlerize"
+```
 
 Public API
 ----------
@@ -136,11 +148,11 @@ Public API
 For even more configurable custom integration with Pathological, a public API is provided. See the generated
 documentation for details on the following public methods:
 
-    Pathological#add_paths!
-    Pathological#find_load_paths
-    Pathological#find_pathfile
-    Pathological#reset!
-    Pathological#copy_paths_to_staging!
+* `Pathological#add_paths!`
+* `Pathological#find_load_paths`
+* `Pathological#find_pathfile`
+* `Pathological#reset!`
+* `Pathological#copy_paths_to_staging!`
 
 Authors
 -------
