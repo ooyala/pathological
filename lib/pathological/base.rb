@@ -50,10 +50,11 @@ module Pathological
   # @param [String] directory the starting directory. Defaults to the directory containing the running file.
   # @return [String, nil] the absolute path to the pathfile (if it exists), otherwise +nil+.
   def self.find_pathfile(directory = nil)
-    # If we're in IRB, use the working directory as the root of the search path for the Pathfile.
-    if $0 != __FILE__ && $0 == "irb"
+    # If we're in interactive mode (IRB, Capistrano, etc), use the working directory as the root of the
+    # search path for the Pathfile.
+    if $0 != __FILE__
       directory = Dir.pwd
-      debug "In IRB -- using the cwd (#{directory}) as the search root for Pathfile."
+      debug "In interactive mode -- using the cwd (#{directory}) as the search root for Pathfile."
     end
     return nil if directory && !File.directory?(directory)
     # Find the full, absolute path of this directory, resolving symlinks. If no directory was given, use the
