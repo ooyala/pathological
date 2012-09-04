@@ -152,7 +152,7 @@ documentation for details on the following public methods:
 * `Pathological#find_load_paths`
 * `Pathological#find_pathfile`
 * `Pathological#reset!`
-* `Pathological#copy_paths_to_staging!`
+* `Pathological#copy_outside_paths!`
 
 Authors
 -------
