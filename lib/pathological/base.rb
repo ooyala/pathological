@@ -89,20 +89,23 @@ module Pathological
   #
   # @param [String] copy_outside_paths the directory to stage dependencies in
   # @param [String] dependency_directory the subdir within destination to put dependencies in
+  # @param [String] pathfile_search_path the directory at which to begin the search for the Pathfile by
+  #                 walking up the directory tree
   #
   # TODO(ev): Break this function up into a set of more functional primitives
-  def self.copy_outside_paths!(destination, dependency_directory = "pathological_dependencies")
+  def self.copy_outside_paths!(destination, options = {})
+    options = {:dependency_directory => "pathological_dependencies"}.merge(options)
     saved_exclude_root = @@exclude_root
     begin
       self.excluderoot_mode
-      pathfile = self.find_pathfile
+      pathfile = self.find_pathfile(options[:pathfile_search_path])
       # Nothing to do if there's no Pathfile
       return unless pathfile && File.file?(pathfile)
 
       foreign_paths = self.find_load_paths(pathfile).uniq
       return if foreign_paths.empty?
 
-      path_root = File.join(destination, dependency_directory)
+      path_root = File.join(destination, options[:dependency_directory])
       FileUtils.mkdir_p path_root
 
       # Copy in each path and save the relative paths to write to the rewritten Pathfile. We copy each unique
@@ -116,7 +119,7 @@ module Pathological
         FileUtils.mkdir_p File.split(symlinked_name)[0]
         debug "About to move #{foreign_path} to #{symlinked_name}..."
         copy_directory(foreign_path, symlinked_name)
-        File.join(dependency_directory, path_short_name)
+        File.join(options[:dependency_directory], path_short_name)
       end
       # Overwrite the Pathfile with the new relative paths.
       File.open(File.join(destination, "Pathfile"), "w") do |file|
