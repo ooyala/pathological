@@ -184,6 +184,16 @@ app.rb:2
           assert_raises(PathologicalException) { load_and_run! }
         end
 
+        should "respect absolute paths" do
+          other = "/a/b"
+          @pathfile = "/src/Pathfile"
+          FileUtils.mkdir "/src"
+          FileUtils.mkdir_p other
+          FileUtils.touch @pathfile
+          File.open(@pathfile, "w") { |f| f.write(other) }
+          assert Pathological.find_load_paths("/src/Pathfile").include? other
+        end
+
         should "print some debug info in debug mode" do
           Pathological.debug_mode
           mock(Pathological).puts(anything).at_least(3)

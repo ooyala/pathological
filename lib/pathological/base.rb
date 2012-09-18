@@ -187,7 +187,7 @@ module Pathological
       # Trim comments
       line = line.split(/#/, 2)[0].strip
       next if line.empty?
-      raw_path = File.expand_path(File.join(root, line.strip))
+      raw_path = Pathname.new(line).absolute? ? line : File.expand_path(File.join(root, line))
       raw_paths << (@@add_parents ? File.dirname(raw_path) : raw_path)
     end
 
