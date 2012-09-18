@@ -128,14 +128,12 @@ app.rb:2
           @empty_stacktrace = []
         end
 
-        should "find root file from a stacktrace in 1.9" do
-          stub(Kernel).caller { @full_19_stacktrace }
-          assert_equal "app.rb", File.basename(Pathological.requiring_filename)
-        end
-
-        focus
-        should "find root file from a stacktrace in 1.8" do
-          stub(Kernel).caller { @full_18_stacktrace }
+        should "find root file from a stacktrace" do
+          if RUBY_VERSION.start_with?("1.9")
+            stub(Kernel).caller { @full_19_stacktrace }
+          else
+            stub(Kernel).caller { @full_18_stacktrace }
+          end
           assert_equal "app.rb", File.basename(Pathological.requiring_filename)
         end
 
