@@ -2,6 +2,8 @@
 
 Pathological is a Ruby tool that provides a lightweight mechanism for managing your project's load path.
 
+[![Build Status](https://secure.travis-ci.org/ooyala/pathological.png)](http://travis-ci.org/ooyala/pathological)
+
 ## The problem
 
 When you're writing a gem, you don't have to worry about paths much, because Rubygems makes sure that `lib/`
