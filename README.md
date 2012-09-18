@@ -1,10 +1,8 @@
-Pathological
-============
+# Pathological
 
 Pathological is a Ruby tool that provides a lightweight mechanism for managing your project's load path.
 
-The problem
------------
+## The problem
 
 When you're writing a gem, you don't have to worry about paths much, because Rubygems makes sure that `lib/`
 makes it into your path for you. On the other hand, if you have large Ruby projects which aren't organized as
@@ -22,8 +20,7 @@ gems, you may encounter some of the following problems:
 
 Pathological provides one way to manage these issues.
 
-Using pathological
-------------------
+## Using pathological
 
 Getting started with pathological is easy. First, make a file called `Pathfile` at your project root:
 
@@ -51,8 +48,7 @@ Pathological (and of course you should have `gem "pathological"` in your `Gemfil
 
 `Pathfile`s should be kept in version control.
 
-Adding other paths to your load path
-------------------------------------
+## Adding other paths to your load path
 
 To add more paths to your load path, just put the paths in your `Pathfile`. The paths are relative to the
 location of the `Pathfile`. The paths will be inserted in the order they appear; the project root itself will
@@ -84,15 +80,13 @@ require "common"
 # ...
 ```
 
-Installation
-------------
+## Installation
 
 Pathological is packaged as a Rubygem and hence can be trivially installed with
 
     $ gem install pathological
 
-Advanced usage
---------------
+## Advanced usage
 
 In some cases, you might want slightly different behavior. This customization is done through the use of
 custom modes. You may use any combination of modes.
@@ -139,11 +133,10 @@ A quicker way is also provided: if you only need to use one special mode, then t
 can require:
 
 ``` ruby
-require "pathological/bundlerize"
+require "pathological/debug"
 ```
 
-Public API
-----------
+## Public API
 
 For even more configurable custom integration with Pathological, a public API is provided. See the generated
 documentation for details on the following public methods:
@@ -154,8 +147,7 @@ documentation for details on the following public methods:
 * `Pathological#reset!`
 * `Pathological#copy_outside_paths!`
 
-Authors
--------
+## Authors
 
 Pathological was written by the following Ooyala engineers:
 
@@ -164,25 +156,21 @@ Pathological was written by the following Ooyala engineers:
 * [Sami Abu-El-Haija](mailto:sami@ooyala.com)
 * [Evan Chan](mailto:ev@ooyala.com)
 
-Credits
--------
+## Credits
 
 * Harry Robertson for the idea to *not* use a dot-prefixed configuration file
 
-Metadata
---------
+## Metadata
 
 * [Hosted on Github](https://github.com/ooyala/pathological)
 * [Rubygems page](https://rubygems.org/gems/pathological)
 * [Documentation](http://rubydoc.info/github/ooyala/pathological/master/frames)
 
-Contributing
-------------
+## Contributing
 
 If you would like to commit a patch, great! Just do the usual github pull request stuff and we'll check it
 out[.](http://www.randomkittengenerator.com/)
 
-License
--------
+## License
 
 Pathological is licensed under the MIT license.
