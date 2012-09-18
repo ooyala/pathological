@@ -147,6 +147,25 @@ documentation for details on the following public methods:
 * `Pathological#reset!`
 * `Pathological#copy_outside_paths!`
 
+## Notes and gotchas
+
+Pathological is intended as a replacement for manually munging the load path in your application when you want
+to load code from other locations. If you can turn each of your dependencies into a gem and then use bundler
+to manage the dependencies, **do that instead**.
+
+Pathological does its best to figure out where the Pathfile it should use is located, based on the call stack.
+For instance, if you run `/foo/bar.rb` and that requires Pathological, then it will search for `/foo/Pathfile`
+and -- failing that -- `/Pathfile`. However, if `/foo/bar.rb` does not require Pathological, but loads a ruby
+file in `/baz/quux.rb`, and *that* file requires Pathological, then Pathological searches for `/baz/Pathfile`
+and then `/Pathfile`.
+
+Any code loading situation which does not preserve a sane load path will be incompatible with Pathological.
+For instance, if you `eval()` some code that requires Pathological, Pathological has no way of telling where
+that code originally lived, and will probably behave in an unexpected way. One place this commonly occurs is
+with rack webservers (e.g., Rackup, Unicorn) that load a `config.ru`. This file is `instance_eval`ed and so
+requiring Pathological from your `config.ru` will not work as expected. In these cases, require Pathological
+in your app directly.
+
 ## Authors
 
 Pathological was written by the following Ooyala engineers:
