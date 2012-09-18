@@ -234,17 +234,20 @@ module Pathological
 
   # Searches the call stack for the file that required pathological. If no file can be found, falls back to
   # the currently executing file ($0). This handles the case where the app was launched by another executable
-  # (rake, thin, rackup, etc.)
+  # (rake, thin, etc.)
   #
   # @return [String] name of file requiring pathological, or the currently executing file.
   def self.requiring_filename
+    # Match paths like .../gems/pathological-0.2.2.1/lib/pathological/base.rb and also
+    # .../gems/pathological-0.2.2.1/lib/pathological.rb
+    pathological_file_pattern = %r{/pathological(/[^/]+|)\.rb}
     requiring_file = Kernel.caller.find do |stack_line|
       if RUBY_VERSION.start_with?("1.9")
         # In Ruby 1.9, top-level files will have the string "top (required)" included in the stack listing.
-        stack_line.include?("top (required)") && !stack_line.include?("pathological.rb")
+        stack_line.include?("top (required)") && stack_line !~ pathological_file_pattern
       else
         # In Ruby 1.8, top-level files are listed with their relative path and without a line number.
-        !stack_line.match(/:\d+:in/) && !stack_line.include?("pathological.rb")
+        stack_line !~ /:\d+:in/ && stack_line !~ pathological_file_pattern
       end
     end
     requiring_file ? requiring_file.match(/(.+):\d+/)[1] : $0 rescue $0
