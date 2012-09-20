@@ -94,7 +94,7 @@ module Pathological
   #
   # TODO(ev): Break this function up into a set of more functional primitives
   def self.copy_outside_paths!(destination, options = {})
-    options = {:dependency_directory => "pathological_dependencies"}.merge(options)
+    options = { :dependency_directory => "pathological_dependencies" }.merge(options)
     saved_exclude_root = @@exclude_root
     begin
       self.excluderoot_mode
@@ -134,7 +134,7 @@ module Pathological
 
   def self.debug_mode; @@debug = true; end
   def self.bundlerize_mode
-    pathfile = Pathological.find_pathfile
+    pathfile = self.find_pathfile
     raise NoPathfileException unless pathfile
     bundle_gemfile = File.join(File.dirname(pathfile), "Gemfile")
     unless File.file? bundle_gemfile

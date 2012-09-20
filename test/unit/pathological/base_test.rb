@@ -4,6 +4,7 @@ require "rr"
 require "minitest/autorun"
 require "stringio"
 require "fakefs/safe"
+require "dedent"
 
 # It's kind of funny that we need to do this hack, given that Pathological is intended to work around it...
 $:.unshift(File.join(File.dirname(__FILE__), "../../lib"))
@@ -102,29 +103,29 @@ module Pathological
 
       context "#requiring_filename" do
         setup do
-          @full_19_stacktrace = %Q{
-/Users/test/ruby/gems/1.9.1/gems/pathological-0.2.2.1/lib/pathological/base.rb:61:in `find_pathfile'
-/Users/test/gems/pathological-0.2.2.1/lib/pathological/base.rb:36:in `find_load_paths'
-/Users/test/gems/pathological-0.2.2.1/lib/pathological/base.rb:15:in `add_paths!'
-/Users/test/gems/pathological-0.2.2.1/lib/pathological.rb:3:in `<top (required)>'
-/Users/test/ruby/1.9.1/rubygems/custom_require.rb:59:in `require'
-/Users/test/ruby/1.9.1/rubygems/custom_require.rb:59:in `rescue in require'
-/Users/test/ruby/1.9.1/rubygems/custom_require.rb:35:in `require'
-/Users/test/repos/pathological/test/rackup/app.rb:1:in `<top (required)>'
-/Users/test/.rubies/1.9.2-p290/lib/ruby/site_ruby/1.9.1/rubygems/custom_require.rb:36:in `require'
-          }.split("\n").reject(&:empty?)
-          @full_18_stacktrace = %Q{
-/Users/test/ruby/gems/1.8/gems/pathological-0.2.5/lib/pathological/base.rb:61:in `find_pathfile'
-/Users/test/ruby/gems/1.8/gems/pathological-0.2.5/lib/pathological/base.rb:36:in `find_load_paths'
-/Users/test/ruby/gems/1.8/gems/pathological-0.2.5/lib/pathological/base.rb:15:in `add_paths!'
-/Users/test/ruby/gems/1.8/gems/pathological-0.2.5/lib/pathological.rb:3
-/Users/test/ruby/site_ruby/1.8/rubygems/custom_require.rb:58:in `gem_original_require'
-/Users/test/ruby/site_ruby/1.8/rubygems/custom_require.rb:58:in `require'
-app.rb:2
-          }.split("\n").reject(&:empty?)
-          @bad_stacktrace = %Q{
-/Users/test/repos/pathological/test/rackup/app.rb !!! `<top (required)>'
-          }.split("\n").reject(&:empty?)
+          @full_19_stacktrace = <<-EOS.dedent.split("\n").reject(&:empty?)
+            /Users/test/ruby/gems/1.9.1/gems/pathological-0.2.2.1/lib/pathological/base.rb:61:in `find_pathfile'
+            /Users/test/gems/pathological-0.2.2.1/lib/pathological/base.rb:36:in `find_load_paths'
+            /Users/test/gems/pathological-0.2.2.1/lib/pathological/base.rb:15:in `add_paths!'
+            /Users/test/gems/pathological-0.2.2.1/lib/pathological.rb:3:in `<top (required)>'
+            /Users/test/ruby/1.9.1/rubygems/custom_require.rb:59:in `require'
+            /Users/test/ruby/1.9.1/rubygems/custom_require.rb:59:in `rescue in require'
+            /Users/test/ruby/1.9.1/rubygems/custom_require.rb:35:in `require'
+            /Users/test/repos/pathological/test/rackup/app.rb:1:in `<top (required)>'
+            /Users/test/.rubies/1.9.2-p290/lib/ruby/site_ruby/1.9.1/rubygems/custom_require.rb:36:in `require'
+          EOS
+          @full_18_stacktrace = <<-EOS.dedent.split("\n").reject(&:empty?)
+            /Users/test/ruby/gems/1.8/gems/pathological-0.2.5/lib/pathological/base.rb:61:in `find_pathfile'
+            /Users/test/ruby/gems/1.8/gems/pathological-0.2.5/lib/pathological/base.rb:36:in `find_load_paths'
+            /Users/test/ruby/gems/1.8/gems/pathological-0.2.5/lib/pathological/base.rb:15:in `add_paths!'
+            /Users/test/ruby/gems/1.8/gems/pathological-0.2.5/lib/pathological.rb:3
+            /Users/test/ruby/site_ruby/1.8/rubygems/custom_require.rb:58:in `gem_original_require'
+            /Users/test/ruby/site_ruby/1.8/rubygems/custom_require.rb:58:in `require'
+            app.rb:2
+          EOS
+          @bad_stacktrace = <<-EOS.dedent.split("\n").reject(&:empty?)
+            /Users/test/repos/pathological/test/rackup/app.rb !!! `<top (required)>'
+          EOS
           @empty_stacktrace = []
         end
 
@@ -273,7 +274,7 @@ app.rb:2
         end
 
         should "copy source dirs as links and rewrite Pathfile in a different directory" do
-          other = "/tmp/other"
+          other = "other/dir"
           FileUtils.mkdir_p other
           File.open(File.join(other, "Pathfile"), "w") { |f| f.puts @source_paths.join("\n") }
 
