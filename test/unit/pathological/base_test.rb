@@ -245,7 +245,7 @@ app.rb:2
         end
 
         should "return immediately if there is no Pathfile" do
-          mock(Pathological).find_pathfile { nil }
+          mock(Pathological).find_pathfile(nil) { nil }
           Pathological.copy_outside_paths! @destination
           refute File.directory?(File.join(@destination, "pathological_dependencies"))
         end
@@ -264,6 +264,24 @@ app.rb:2
             mock(Pathological).copy_directory(source_path, final_path + source_path.gsub("/src", "")).once
           end
           Pathological.copy_outside_paths! @destination
+
+          assert File.directory?(final_path)
+          destination_paths = @source_paths.map do |source_path|
+            "pathological_dependencies#{source_path.gsub("/src", "")}"
+          end
+          assert_equal destination_paths, File.read(File.join(@destination, "Pathfile")).split("\n")
+        end
+
+        should "copy source dirs as links and rewrite Pathfile in a different directory" do
+          other = "/tmp/other"
+          FileUtils.mkdir_p other
+          File.open(File.join(other, "Pathfile"), "w") { |f| f.puts @source_paths.join("\n") }
+
+          final_path = File.join(@destination, "pathological_dependencies")
+          @source_paths.each do |source_path|
+            mock(Pathological).copy_directory(source_path, final_path + source_path.gsub("/src", "")).once
+          end
+          Pathological.copy_outside_paths! @destination, :pathfile_search_path => other
 
           assert File.directory?(final_path)
           destination_paths = @source_paths.map do |source_path|
