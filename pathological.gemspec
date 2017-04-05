@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version = Pathological::VERSION
   s.platform    = Gem::Platform::RUBY
 
-  s.required_rubygems_version = Gem::Requirement.new(">=0") if s.respond_to? :required_rubygems_version=
+  s.required_rubygems_version = Gem::Requirement.new(">=2.3.0") if s.respond_to? :required_rubygems_version=
   s.specification_version = 2 if s.respond_to? :specification_version=
 
   s.authors = "Daniel MacDougall", "Caleb Spare", "Evan Chan"
