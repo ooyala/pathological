@@ -29,5 +29,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "scope", "~> 0.2.3"
   s.add_development_dependency "fakefs", "~> 0.4.0"
   s.add_development_dependency "rake", "~>0.9.2.2"
+  s.add_development_dependency "minitest" "~>4.3.3"
   s.add_development_dependency "dedent"
 end
