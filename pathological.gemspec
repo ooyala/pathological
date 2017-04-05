@@ -25,9 +25,9 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   # Require rr >= 1.0.3 and scope >= 0.2.3 for mutual compatibility.
-  s.add_development_dependency "rr", ">= 1.0.3"
-  s.add_development_dependency "scope", ">= 0.2.3"
-  s.add_development_dependency "fakefs"
-  s.add_development_dependency "rake"
+  s.add_development_dependency "rr", "~> 1.0.4"
+  s.add_development_dependency "scope", "~> 0.2.3"
+  s.add_development_dependency "fakefs", "~> 0.4.0"
+  s.add_development_dependency "rake", "~>0.9.2.2"
   s.add_development_dependency "dedent"
 end

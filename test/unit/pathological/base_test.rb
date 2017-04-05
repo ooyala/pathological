@@ -130,7 +130,7 @@ module Pathological
         end
 
         should "find root file from a stacktrace" do
-          if RUBY_VERSION.start_with?("1.9")
+          if RUBY_VERSION.start_with?("1.9") || RUBY_VERSION.start_with?("2.3")
             stub(Kernel).caller { @full_19_stacktrace }
           else
             stub(Kernel).caller { @full_18_stacktrace }
