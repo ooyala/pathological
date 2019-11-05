@@ -245,11 +245,12 @@ module Pathological
     # .../gems/pathological-0.2.2.1/lib/pathological.rb
     pathological_file_pattern = %r{/pathological(/[^/]+|)\.rb}
     requiring_file = Kernel.caller.find do |stack_line|
-      if RUBY_VERSION.start_with?("1.9")
-        # In Ruby 1.9, top-level files will have the string "top (required)" included in the stack listing.
+      trimed_ruby_version = RUBY_VERSION[0..3].to_f rescue 1.9
+      if trimed_ruby_version >= 1.9
+        # In Ruby >=1.9, top-level files will have the string "top (required)" included in the stack listing.
         stack_line.include?("top (required)") && stack_line !~ pathological_file_pattern
       else
-        # In Ruby 1.8, top-level files are listed with their relative path and without a line number.
+        # In Ruby <=1.8, top-level files are listed with their relative path and without a line number.
         stack_line !~ /:\d+:in/ && stack_line !~ pathological_file_pattern
       end
     end
