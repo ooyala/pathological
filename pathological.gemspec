@@ -3,21 +3,21 @@ $:.unshift File.expand_path("../lib", __FILE__)
 require "pathological/version"
 
 Gem::Specification.new do |s|
-  s.name = "pathological"
+  s.name = "pathological-v2"
   s.version = Pathological::VERSION
   s.platform    = Gem::Platform::RUBY
 
   s.required_rubygems_version = Gem::Requirement.new(">=2.3.0") if s.respond_to? :required_rubygems_version=
   s.specification_version = 2 if s.respond_to? :specification_version=
 
-  s.authors = "Daniel MacDougall", "Caleb Spare", "Evan Chan"
-  s.email = "dmac@ooyala.com", "caleb@ooyala.com", "ev@ooyala.com"
+  s.authors = "Maheshwaran G"
+  s.email = "maheshwarang@brightcove.com"
   s.homepage = "http://www.ooyala.com"
-  s.rubyforge_project = "pathological"
+  s.rubyforge_project = "pathological-v2"
 
   s.summary = "A nice way to manage your project's require paths."
   s.description = <<-DESCRIPTION
-    Pathological provides a way to manage a project's require paths by using a small config file that
+    Extension of Pathological Gem to support Ruby > 1.9 version
     indicates all directories to include in the load path.
   DESCRIPTION
 
